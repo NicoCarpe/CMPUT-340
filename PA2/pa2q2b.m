@@ -1,0 +1,94 @@
+%%% Question 2B %%%
+
+% Put the matricies x and y from the pa2q2b.mat into column format
+X = x.';
+Y = y.';
+
+% Similarily to our dataset 2 from question 1, we have data of a noisy parabolic
+% nature. Considering this we would again want to use the polynomial basis
+% function as well as approximation over interpolation. This is so we can
+% get a line the follows the trend of the data without following the noise
+% too closely. After calculating the residuals we can see that even though
+% we are ignoring alot of the noise, our residual values are relatively
+% small, this can be summed up with the fact that our residual mse is less
+% than 1. Because of these observations, it can be said that our model is a
+% good fit for the data
+
+
+
+% Find interpolations and approximations for Dataset and plot
+
+figure;
+scatter(X, Y, 'o', 'filled');
+hold on;  
+
+
+%%% polynomial approximation %%%
+poly_approx = func_fit(X, Y, 'approximation', 'poly', 5);
+x_approx = linspace(min(X), max(X), 100);
+% polyval needs polynomial in reverse order
+poly_approx = flip(poly_approx, 1);
+y_approx = polyval(poly_approx, x_approx);
+
+plot(x_approx, y_approx, 'LineWidth', 1, 'DisplayName', 'Poly Approx');
+
+% find the derivative of the polynomial
+poly_derivative = polyder(poly_approx);
+
+% show the derivative for the same x values as the origional polynomial
+y_derivative = polyval(poly_derivative, x_approx);
+
+plot(x_approx, y_derivative, 'LineWidth', 1, 'DisplayName', 'Poly Deriv');
+
+
+
+% find the area under the curve of the polynomial (its integral)
+
+% we can define a function f(z) = poly_approx using @(z) and then define
+% its bounds using the bounds of our X data
+
+area = integral(@(z) polyval(poly_approx, z), min(X), max(X));
+
+% Display the area under the curve on the plot
+x_text = mean(X); 
+y_text = mean(Y);
+text(x_text, y_text, ['Area under the curve: ', num2str(area)], 'HorizontalAlignment', 'center');
+
+
+
+% calculate errors between the interpolation and the original data
+% residual error
+y_approx_origin = polyval(poly_approx, X);
+residuals = Y - y_approx_origin;
+
+% when dividing by Y we may encounter 0 values, to prevent divide by 0
+% errors we can add a small number to Y to prevent this
+e = 1e-8;
+
+% relative residual error (./ to perform elementwise division)
+rel_residuals = residuals ./ (Y + e);
+
+% to find a metric for how close the curve is to the actual data we can use
+% residual mean squared error
+residual_MSE = sqrt(mean(residuals.^2));
+
+% display all of the data
+disp('residuals:')
+disp(residuals)
+disp('relative residuals:')
+disp(rel_residuals)
+disp(['residual MSE: ', num2str(residual_MSE)])
+
+
+% Customize the plot
+title('Analyst Dataset');
+xlabel('x');
+ylabel('y');
+legend('Data', 'Polynomial Approximation', 'Polynomial Derivative');
+grid on;
+
+% Set the axis limits
+xlim([min(X), max(X)]);
+ylim([-(1/2)*max(Y), max(Y)]);
+
+hold off;  % Release the hold on the current plot

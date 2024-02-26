@@ -1,0 +1,126 @@
+%%% Question 2A %%%
+
+% Observed data
+T = [ 0.  1.  2.  3.  4.  5.  6.  7.  8.  9. 10.];
+D = [486.   481.14 466.56 442.26 408.24 364.5  311.04 247.86 174.96  92.34 0.  ];
+
+% a polynomial basis function would fit this function better than a
+% triginometric one as the data does not seem to be cyclic in any way, also
+% since the data seems to be very parabolic in nature, interpolation would
+% be a good option, as it will pass through all of the points as well as
+% follow the shape of the data closely.
+
+
+% Considering that the equation for a falling object is (1/2)*gt^2
+% where g = 9.81 is the gravitational constant, we can calculate the
+% theoretical distances at each time T from the initial height of 486
+% (assuming SI units)
+
+D_theory = [486.0, 481.095, 466.38, 441.855, 407.52, 363.375, 309.42, 245.655, 172.08, 88.695, -4.5];
+
+% When we plot the observed data along with this theoretical data we and fit
+% with either a polynomial approimation or interpolation we see that the
+% curves almost exactly overlap. This is confirmed when we observe the From this behaviour, it can be said that
+% the observations (D) do follow the laws of physics (the theoretical
+% values D_theory).
+
+
+
+
+% Put into column format
+X = T.';
+Y = D.';
+
+
+% Find interpolations and approximations for Dataset and plot
+
+figure;
+scatter(X, Y, 'o', 'filled');
+hold on;  
+
+%%% polynomial interpolation %%%
+poly_interp = func_fit(X, Y, 'interpolation', 'poly');
+x_interp = linspace(min(X), max(X), 100);
+% polyval needs polynomial in reverse order
+poly_interp = flip(poly_interp, 1);
+y_interp = polyval(poly_interp, x_interp);
+
+plot(x_interp, y_interp, 'LineWidth', 1, 'DisplayName', 'Poly Interp');
+
+% calculate errors for interpolation for the origional data
+% residual error
+y_interp_origin = polyval(poly_interp, X);
+residuals = Y - y_interp_origin;
+
+% when dividing by Y we may encounter 0 values, to prevent divide by 0
+% errors we can add a small number to Y to prevent this
+e = 1e-8;
+
+% relative residual error (./ to perform elementwise division)
+rel_residuals = residuals ./ (Y + e);
+
+% to find a metric for how close the curve is to the actual data we can use
+% residual mean squared error
+residual_MSE = sqrt(mean(residuals.^2));
+
+
+
+% load the theoretical data
+Y = D_theory.';
+
+scatter(X, Y, 'o', 'filled');
+
+%%% theoretical polynomial interpolation %%%
+poly_interp = func_fit(X, Y, 'interpolation', 'poly');
+x_interp = linspace(min(X), max(X), 100);
+% polyval needs polynomial in reverse order
+poly_interp = flip(poly_interp, 1);
+y_interp = polyval(poly_interp, x_interp);
+
+plot(x_interp, y_interp, 'LineWidth', 1, 'DisplayName', 'Theory Poly Interp');
+
+% calculate errors for the theoretical data
+% residual error
+y_interp_origin = polyval(poly_interp, X);
+theory_residuals = Y - y_interp_origin;
+
+% when dividing by Y we may encounter 0 values, to prevent divide by 0
+% errors we can add a small number to Y to prevent this
+e = 1e-8;
+
+% relative residual error (./ to perform elementwise division)
+theory_rel_residuals = theory_residuals ./ (Y + e);
+
+% to find a metric for how close the theoretical curve is to the actual data we can use
+% residual mean squared error
+theory_residual_MSE = sqrt(mean(theory_residuals.^2));
+
+residual_MSE_diff = abs(residual_MSE - theory_residual_MSE);
+
+% display all of the data
+disp('residuals:')
+disp(residuals)
+disp('rel_residuals:')
+disp(rel_residual)
+disp(['residual_MSE: ', num2str(residual_MSE)])
+
+disp('theory_residuals:')
+disp(theory_residuals)
+disp('theory_rel_residuals:')
+disp(theory_rel_residuals)
+disp(['theory_residual_MSE: ', num2str(theory_residual_MSE)])
+
+disp(['residual_MSE_diff: ', num2str(residual_MSE_diff)])
+
+% Customize the plot
+title('Freefalling Object');
+xlabel('x');
+ylabel('y');
+legend('Data', 'Polynomial Interpolation', 'Theory Data', 'Theoretical Polynomial Interpolation');
+grid on;
+
+% Set the axis limits
+xlim([min(X), max(X)]);
+ylim([min(Y), max(Y)]);
+
+hold off;  % Release the hold on the current plot
